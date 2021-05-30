@@ -22,11 +22,11 @@ func migrate(db *gorm.DB) {
 func main() {
 	env.Load()
 
-	db := repository.New()
-	if db == nil {
+	s, err := repository.New()
+	if err != nil {
 		log.Fatal("Error connection to db")
 	}
-	migrate(db)
+	migrate(s.GetDB())
 
 	port := os.Getenv("PORT")
 

@@ -8,9 +8,13 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+type Storage struct {
+	db *gorm.DB
+}
 
-func New() *gorm.DB {
+func New() (*Storage, error) {
+	s := new(Storage)
+
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
 		os.Getenv("DB_HOST"),
@@ -22,14 +26,20 @@ func New() *gorm.DB {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	dBase, _ := db.DB()
 	dBase.SetConnMaxIdleTime(10)
 
-	return db
+	s.db = db
+
+	return s, nil
 }
 
-func GetDB() *gorm.DB {
-	return db
+func (s *Storage) GetDB() *gorm.DB {
+	return s.db
+}
+
+func (s *Storage) Begin() *gorm.DB {
+	return s.db.Begin()
 }
