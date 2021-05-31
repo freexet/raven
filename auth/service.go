@@ -13,6 +13,7 @@ type Service interface {
 
 type Repository interface {
 	CreateUser(user *User) error
+	GetUser(user *User) (*User, error)
 }
 
 type service struct {
@@ -24,6 +25,11 @@ func NewService(r Repository) Service {
 }
 
 func (s *service) Register(username, password string) (*User, error) {
+	_, err := s.r.GetUser(&User{Username: username})
+	if err == nil {
+		return nil, errors.New("error registering user: username already exists")
+	}
+
 	pwdHash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return nil, errors.New("error registering user: failed generating password")
