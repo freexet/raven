@@ -18,8 +18,14 @@ input NewUser {
   password: String!
 }
 
+input Login {
+  username: String!
+  password: String!
+}
+
 type Mutation {
   registerUser(params: NewUser!): User!
+  login(params: Login!): User!
 }
 
 scalar Time
