@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,7 +29,7 @@ func (s *service) Register(username, password string) (*User, error) {
 		return nil, errors.New("error registering user: failed generating password")
 	}
 
-	user := &User{Username: username, PasswordHash: string(pwdHash)}
+	user := &User{ID: uuid.NewString(), Username: username, PasswordHash: string(pwdHash)}
 	err = s.r.CreateUser(user)
 
 	return user, err

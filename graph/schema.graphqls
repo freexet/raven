@@ -5,6 +5,8 @@
 type User {
   id: ID!
   username: String!
+  createdAt: Time!
+  updatedAt: Time!
 }
 
 type Query {
@@ -19,3 +21,5 @@ input NewUser {
 type Mutation {
   registerUser(params: NewUser!): User!
 }
+
+scalar Time
