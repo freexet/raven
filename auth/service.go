@@ -1,12 +1,16 @@
 package auth
 
 import (
+	"bytes"
+	"encoding/base64"
 	"errors"
+	"image/png"
 	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,11 +18,14 @@ type Service interface {
 	Register(username, password string) (*User, error)
 	Login(username, password string) (*User, error)
 	GetUserByID(id string) (*User, error)
+	GenerateOTP(user *User) (string, string, error)
+	ValidateOTP(code string, user *User) error
 }
 
 type Repository interface {
 	CreateUser(user *User) error
 	GetUser(user *User) (*User, error)
+	Save(obj interface{})
 }
 
 type service struct {
@@ -92,4 +99,35 @@ func (s *service) GetUserByID(id string) (*User, error) {
 	}
 
 	return u, nil
+}
+
+func (s *service) GenerateOTP(user *User) (secretKey string, imageData string, err error) {
+	key, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      "Commie.com",
+		AccountName: user.Username,
+	})
+	if err != nil {
+		return "", "", errors.New("error generating otp")
+	}
+
+	var buf bytes.Buffer
+	img, err := key.Image(200, 200)
+	if err != nil {
+		return "", "", errors.New("error generating otp qr code")
+	}
+	png.Encode(&buf, img)
+	encoded := base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	user.SecretKey = key.Secret()
+	s.r.Save(user)
+
+	return key.Secret(), encoded, nil
+}
+
+func (s *service) ValidateOTP(code string, user *User) error {
+	valid := totp.Validate(code, user.SecretKey)
+	if !valid {
+		return errors.New("token invalid")
+	}
+	return nil
 }

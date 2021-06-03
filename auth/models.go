@@ -10,6 +10,7 @@ type User struct {
 	Username     string `gorm:"type:varchar(32);unique_index"`
 	PasswordHash string `gorm:"not null"`
 	Token        string `gorm:"-"`
+	SecretKey    string
 }
 
 func AutoMigrate(db *gorm.DB) {

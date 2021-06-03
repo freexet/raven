@@ -46,8 +46,15 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
+		GenerateOtp  func(childComplexity int) int
 		Login        func(childComplexity int, params model.Login) int
 		RegisterUser func(childComplexity int, params model.NewUser) int
+		ValidateOtp  func(childComplexity int, code string) int
+	}
+
+	Otp struct {
+		ImgData   func(childComplexity int) int
+		SecretKey func(childComplexity int) int
 	}
 
 	Query struct {
@@ -66,6 +73,8 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	RegisterUser(ctx context.Context, params model.NewUser) (*auth.User, error)
 	Login(ctx context.Context, params model.Login) (*auth.User, error)
+	GenerateOtp(ctx context.Context) (*model.Otp, error)
+	ValidateOtp(ctx context.Context, code string) (*auth.User, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*auth.User, error)
@@ -85,6 +94,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Mutation.generateOTP":
+		if e.complexity.Mutation.GenerateOtp == nil {
+			break
+		}
+
+		return e.complexity.Mutation.GenerateOtp(childComplexity), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -109,6 +125,32 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RegisterUser(childComplexity, args["params"].(model.NewUser)), true
+
+	case "Mutation.validateOTP":
+		if e.complexity.Mutation.ValidateOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_validateOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ValidateOtp(childComplexity, args["code"].(string)), true
+
+	case "OTP.imgData":
+		if e.complexity.Otp.ImgData == nil {
+			break
+		}
+
+		return e.complexity.Otp.ImgData(childComplexity), true
+
+	case "OTP.secretKey":
+		if e.complexity.Otp.SecretKey == nil {
+			break
+		}
+
+		return e.complexity.Otp.SecretKey(childComplexity), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -228,6 +270,11 @@ type User {
   token: String
 }
 
+type OTP {
+  secretKey: String!
+  imgData: String!
+}
+
 type Query {
   users: [User!]!
 }
@@ -245,6 +292,8 @@ input Login {
 type Mutation {
   registerUser(params: NewUser!): User!
   login(params: Login!): User!
+  generateOTP: OTP!
+  validateOTP(code: String!): User!
 }
 
 scalar Time`, BuiltIn: false},
@@ -282,6 +331,21 @@ func (ec *executionContext) field_Mutation_registerUser_args(ctx context.Context
 		}
 	}
 	args["params"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_validateOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["code"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg0
 	return args, nil
 }
 
@@ -420,6 +484,153 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	res := resTmp.(*auth.User)
 	fc.Result = res
 	return ec.marshalNUser2ᚖgithubᚗcomᚋfreexetᚋravenᚋauthᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_generateOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().GenerateOtp(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Otp)
+	fc.Result = res
+	return ec.marshalNOTP2ᚖgithubᚗcomᚋfreexetᚋravenᚋgraphᚋmodelᚐOtp(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_validateOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_validateOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ValidateOtp(rctx, args["code"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*auth.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋfreexetᚋravenᚋauthᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OTP_secretKey(ctx context.Context, field graphql.CollectedField, obj *model.Otp) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "OTP",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SecretKey, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OTP_imgData(ctx context.Context, field graphql.CollectedField, obj *model.Otp) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "OTP",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImgData, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1876,6 +2087,48 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "generateOTP":
+			out.Values[i] = ec._Mutation_generateOTP(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "validateOTP":
+			out.Values[i] = ec._Mutation_validateOTP(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var oTPImplementors = []string{"OTP"}
+
+func (ec *executionContext) _OTP(ctx context.Context, sel ast.SelectionSet, obj *model.Otp) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, oTPImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OTP")
+		case "secretKey":
+			out.Values[i] = ec._OTP_secretKey(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "imgData":
+			out.Values[i] = ec._OTP_imgData(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2258,6 +2511,20 @@ func (ec *executionContext) unmarshalNLogin2githubᚗcomᚋfreexetᚋravenᚋgra
 func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋfreexetᚋravenᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
 	res, err := ec.unmarshalInputNewUser(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOTP2githubᚗcomᚋfreexetᚋravenᚋgraphᚋmodelᚐOtp(ctx context.Context, sel ast.SelectionSet, v model.Otp) graphql.Marshaler {
+	return ec._OTP(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNOTP2ᚖgithubᚗcomᚋfreexetᚋravenᚋgraphᚋmodelᚐOtp(ctx context.Context, sel ast.SelectionSet, v *model.Otp) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._OTP(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

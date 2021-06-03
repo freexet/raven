@@ -24,6 +24,44 @@ func (r *mutationResolver) Login(ctx context.Context, params model.Login) (*auth
 	return a.(auth.Service).Login(params.Username, params.Password)
 }
 
+func (r *mutationResolver) GenerateOtp(ctx context.Context) (*model.Otp, error) {
+	otp, err := Authenticate(ctx, func(ctx *gin.Context, user *auth.User) (interface{}, error) {
+		a, _ := ctx.Get("auth")
+
+		secret, imgData, err := a.(auth.Service).GenerateOTP(user)
+		if err != nil {
+			return nil, err
+		}
+
+		return &model.Otp{SecretKey: secret, ImgData: imgData}, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return otp.(*model.Otp), err
+}
+
+func (r *mutationResolver) ValidateOtp(ctx context.Context, code string) (*auth.User, error) {
+	user, err := Authenticate(ctx, func(ctx *gin.Context, user *auth.User) (interface{}, error) {
+		a, _ := ctx.Get("auth")
+
+		err := a.(auth.Service).ValidateOTP(code, user)
+		if err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user.(*auth.User), err
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*auth.User, error) {
 	obj, err := Authenticate(ctx, func(ctx *gin.Context, user *auth.User) (interface{}, error) {
 		return []*auth.User{user}, nil

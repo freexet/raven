@@ -11,3 +11,8 @@ type NewUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type Otp struct {
+	SecretKey string `json:"secretKey"`
+	ImgData   string `json:"imgData"`
+}

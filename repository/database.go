@@ -43,3 +43,7 @@ func (s *Storage) GetDB() *gorm.DB {
 func (s *Storage) Begin() *gorm.DB {
 	return s.db.Begin()
 }
+
+func (s *Storage) Save(obj interface{}) {
+	s.db.Save(obj)
+}
