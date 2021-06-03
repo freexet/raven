@@ -13,6 +13,7 @@ import (
 type Service interface {
 	Register(username, password string) (*User, error)
 	Login(username, password string) (*User, error)
+	GetUserByID(id string) (*User, error)
 }
 
 type Repository interface {
@@ -80,6 +81,15 @@ func (s *service) Login(username, password string) (*User, error) {
 	}
 
 	u.Token = signed
+
+	return u, nil
+}
+
+func (s *service) GetUserByID(id string) (*User, error) {
+	u, err := s.r.GetUser(&User{ID: id})
+	if err != nil {
+		return nil, errors.New("error get user: user id not registered")
+	}
 
 	return u, nil
 }

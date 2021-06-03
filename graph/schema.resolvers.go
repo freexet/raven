@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/freexet/raven/auth"
 	"github.com/freexet/raven/graph/generated"
@@ -26,7 +25,15 @@ func (r *mutationResolver) Login(ctx context.Context, params model.Login) (*auth
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*auth.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	obj, err := Authenticate(ctx, func(ctx *gin.Context, user *auth.User) (interface{}, error) {
+		return []*auth.User{user}, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.([]*auth.User), err
 }
 
 // Mutation returns generated.MutationResolver implementation.
