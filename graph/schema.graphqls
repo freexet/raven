@@ -7,6 +7,7 @@ type User {
   username: String!
   createdAt: Time!
   updatedAt: Time!
+  token: String
 }
 
 type Query {

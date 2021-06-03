@@ -39,7 +39,7 @@ func playgroundHandler() gin.HandlerFunc {
 func GinContextToContextMiddleware(a auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("auth", a)
-		ctx := context.WithValue(c.Request.Context(), "ginCtx", c)
+		ctx := context.WithValue(c.Request.Context(), graph.ContextKey{Name: "ginCtx"}, c)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}

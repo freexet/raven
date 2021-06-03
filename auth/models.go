@@ -7,8 +7,9 @@ import (
 type User struct {
 	gorm.Model
 	ID           string `gorm:"type:varchar(64);primarykey"`
-	Username     string `gorm:"type:varchar(32);column:username;unique_index"`
-	PasswordHash string `gorm:"column:password;not null"`
+	Username     string `gorm:"type:varchar(32);unique_index"`
+	PasswordHash string `gorm:"not null"`
+	Token        string `gorm:"-"`
 }
 
 func AutoMigrate(db *gorm.DB) {

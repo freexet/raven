@@ -14,13 +14,13 @@ import (
 )
 
 func (r *mutationResolver) RegisterUser(ctx context.Context, params model.NewUser) (*auth.User, error) {
-	gc := ctx.Value("ginCtx").(*gin.Context)
+	gc := ctx.Value(ContextKey{Name: "ginCtx"}).(*gin.Context)
 	a, _ := gc.Get("auth")
 	return a.(auth.Service).Register(params.Username, params.Password)
 }
 
 func (r *mutationResolver) Login(ctx context.Context, params model.Login) (*auth.User, error) {
-	gc := ctx.Value("ginCtx").(*gin.Context)
+	gc := ctx.Value(ContextKey{Name: "ginCtx"}).(*gin.Context)
 	a, _ := gc.Get("auth")
 	return a.(auth.Service).Login(params.Username, params.Password)
 }
