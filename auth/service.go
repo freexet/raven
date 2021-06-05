@@ -16,7 +16,7 @@ import (
 
 type Service interface {
 	Register(username, password string) (*User, error)
-	Login(username, password string) (*User, error)
+	Login(username, password, ipAddress string) (*User, error)
 	GetUserByID(id string) (*User, error)
 	GenerateOTP(user *User) (string, string, error)
 	ValidateOTP(code string, user *User) error
@@ -26,6 +26,8 @@ type Repository interface {
 	CreateUser(user *User) error
 	GetUser(user *User) (*User, error)
 	Save(obj interface{})
+	CreateFailedLoginAttempt(attempt *FailedLoginAttemp) error
+	GetFailedLoginAttempts(ipAddress string) ([]*FailedLoginAttemp, error)
 }
 
 type service struct {
@@ -67,14 +69,24 @@ func (s *service) Register(username, password string) (*User, error) {
 	return user, err
 }
 
-func (s *service) Login(username, password string) (*User, error) {
+func (s *service) Login(username, password, ipAddress string) (*User, error) {
+	attempts, err := s.r.GetFailedLoginAttempts(ipAddress)
+	if err != nil {
+		return nil, errors.New("error getting failed login attempts")
+	}
+	if len(attempts) >= 3 {
+		return nil, errors.New("you are only allowed 3 attempts in 30 minutes")
+	}
+
 	u, err := s.r.GetUser(&User{Username: username})
 	if err != nil {
+		s.r.CreateFailedLoginAttempt(&FailedLoginAttemp{ID: uuid.NewString(), IPAddress: ipAddress, CreatedAt: time.Now()})
 		return nil, errors.New("error login: username not registered")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
 	if err != nil {
+		s.r.CreateFailedLoginAttempt(&FailedLoginAttemp{ID: uuid.NewString(), IPAddress: ipAddress, CreatedAt: time.Now()})
 		return nil, errors.New("error login: wrong password")
 	}
 

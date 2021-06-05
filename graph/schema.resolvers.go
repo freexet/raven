@@ -21,7 +21,7 @@ func (r *mutationResolver) RegisterUser(ctx context.Context, params model.NewUse
 func (r *mutationResolver) Login(ctx context.Context, params model.Login) (*auth.User, error) {
 	gc := ctx.Value(ContextKey{Name: "ginCtx"}).(*gin.Context)
 	a, _ := gc.Get("auth")
-	return a.(auth.Service).Login(params.Username, params.Password)
+	return a.(auth.Service).Login(params.Username, params.Password, gc.ClientIP())
 }
 
 func (r *mutationResolver) GenerateOtp(ctx context.Context) (*model.Otp, error) {
