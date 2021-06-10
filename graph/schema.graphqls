@@ -29,11 +29,33 @@ input Login {
   password: String!
 }
 
+input NewShop {
+  userId: String!
+  name: String!
+  description: String
+  country: String
+  region: String
+  city: String
+}
+
+type Shop {
+  ID: String!
+  userId: String!
+  name: String!
+  description: String
+  country: String
+  region: String
+  city: String
+  createdAt: Time!
+  updatedAt: Time!
+}
+
 type Mutation {
   registerUser(params: NewUser!): User!
   login(params: Login!): User!
   generateOTP: OTP!
   validateOTP(code: String!): User!
+  createShop(params: NewShop!): Shop!
 }
 
 scalar Time

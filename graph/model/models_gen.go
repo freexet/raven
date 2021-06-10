@@ -7,6 +7,15 @@ type Login struct {
 	Password string `json:"password"`
 }
 
+type NewShop struct {
+	UserID      string  `json:"userId"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	Country     *string `json:"country"`
+	Region      *string `json:"region"`
+	City        *string `json:"city"`
+}
+
 type NewUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

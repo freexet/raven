@@ -9,6 +9,7 @@ import (
 	"github.com/freexet/raven/auth"
 	"github.com/freexet/raven/graph/generated"
 	"github.com/freexet/raven/graph/model"
+	"github.com/freexet/raven/shop"
 	"github.com/gin-gonic/gin"
 )
 
@@ -60,6 +61,18 @@ func (r *mutationResolver) ValidateOtp(ctx context.Context, code string) (*auth.
 	}
 
 	return user.(*auth.User), err
+}
+
+func (r *mutationResolver) CreateShop(ctx context.Context, params model.NewShop) (*shop.Shop, error) {
+	s, err := Authenticate(ctx, func(ctx *gin.Context, user *auth.User) (interface{}, error) {
+		s, _ := ctx.Get("shop")
+
+		shop, err := s.(shop.Service).CreateShop(params.UserID, params.Name, *params.Description, *params.Country, *params.Region, *params.City)
+
+		return shop, err
+	})
+
+	return s.(*shop.Shop), err
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*auth.User, error) {

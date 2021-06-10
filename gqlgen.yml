@@ -45,6 +45,8 @@ autobind:
 models:
   User:
     model: github.com/freexet/raven/auth.User
+  Shop:
+    model: github.com/freexet/raven/shop.Shop
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID
